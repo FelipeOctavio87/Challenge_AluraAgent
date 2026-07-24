@@ -2,9 +2,29 @@
 
 from __future__ import annotations
 
+import importlib
+import os
+import sys
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+ROOT = Path(__file__).resolve().parent
+ENV_PATH = ROOT / ".env"
+load_dotenv(ENV_PATH, override=True)
+
+# Streamlit cachea imports: forzar recarga de src.* desde disco
+for mod_name in list(sys.modules):
+    if mod_name == "src" or mod_name.startswith("src."):
+        del sys.modules[mod_name]
+
 import streamlit as st
 
-from src.config import LLM_MODEL, TOP_K, VECTORSTORE_DIR
+import src.config as config
+
+importlib.reload(config)
+
+from src.config import LLM_MODEL, TOP_K, VECTORSTORE_DIR, read_api_key
 from src.ingest import build_vectorstore, load_vectorstore
 from src.rag_chain import ask
 
@@ -15,6 +35,24 @@ SUGGESTED_QUESTIONS = [
     "Que hago si sospecho robo de credenciales?",
     "Cuanto cuesta la reposicion de tarjeta debit?",
 ]
+
+
+def _load_api_key() -> str:
+    load_dotenv(ENV_PATH, override=True)
+    key = os.getenv("LLM_API_KEY", "").strip()
+    if key:
+        return key
+    try:
+        return read_api_key()
+    except Exception:  # noqa: BLE001
+        pass
+    if not ENV_PATH.exists():
+        return ""
+    for line in ENV_PATH.read_text(encoding="utf-8-sig").splitlines():
+        line = line.strip()
+        if line.startswith("LLM_API_KEY="):
+            return line.split("=", 1)[1].strip().strip('"').strip("'")
+    return ""
 
 
 def _ensure_index() -> None:
@@ -31,6 +69,8 @@ def main() -> None:
         layout="centered",
     )
 
+    api_key = _load_api_key()
+
     st.title("Asistente NeoBank Alura")
     st.caption(
         "Consulta politicas, tarifas y seguridad del banco digital "
@@ -39,6 +79,8 @@ def main() -> None:
 
     with st.sidebar:
         st.header("Configuracion")
+        st.caption(f".env: `{ENV_PATH}`")
+        st.caption(f"Existe: {ENV_PATH.exists()} | Key cargada: {bool(api_key)}")
         model = st.text_input("Modelo LLM", value=LLM_MODEL)
         top_k = st.slider("Top-K retrieval", min_value=1, max_value=8, value=TOP_K)
         st.info(
@@ -55,6 +97,16 @@ def main() -> None:
         for q in SUGGESTED_QUESTIONS:
             if st.button(q, key=f"sug_{q}", use_container_width=True):
                 st.session_state["pending_question"] = q
+
+    if not api_key:
+        st.error(
+            "No se encontro LLM_API_KEY.\n\n"
+            f"Ruta buscada: `{ENV_PATH}`\n"
+            f"Existe el archivo: {ENV_PATH.exists()}\n\n"
+            "Abre `.env`, verifica `LLM_API_KEY=gsk_...`, "
+            "luego Ctrl+C y `streamlit run app.py`."
+        )
+        st.stop()
 
     _ensure_index()
 
@@ -101,7 +153,11 @@ def main() -> None:
                     error_msg = f"Error al consultar el agente: {exc}"
                     st.error(error_msg)
                     st.session_state.messages.append(
-                        {"role": "assistant", "content": error_msg, "sources": []}
+                        {
+                            "role": "assistant",
+                            "content": error_msg,
+                            "sources": [],
+                        }
                     )
 
 
