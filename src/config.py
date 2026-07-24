@@ -36,7 +36,11 @@ def read_api_key() -> str:
         return key
     if not env_path.exists():
         return ""
-    for line in env_path.read_text(encoding="utf-8-sig").splitlines():
+    try:
+        lines = env_path.read_text(encoding="utf-8-sig").splitlines()
+    except OSError:
+        return ""
+    for line in lines:
         line = line.strip()
         if line.startswith("LLM_API_KEY="):
             return line.split("=", 1)[1].strip().strip('"').strip("'")
