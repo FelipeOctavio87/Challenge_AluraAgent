@@ -1,0 +1,12 @@
+venv/
+.git/
+.gitignore
+.env
+.streamlit/secrets.toml
+__pycache__/
+*.pyc
+.cache/
+huggingface/
+docs/screenshots/
+*.md
+!README.md

@@ -1,0 +1,11 @@
+codigo,concepto,moneda,comision,notas
+SPEI_OUT,Transferencia SPEI saliente,MXN,8.00,Por operacion
+SPEI_IN,Transferencia SPEI entrante,MXN,0.00,Sin costo
+NEO_P2P,Transferencia entre cuentas NeoBank,MXN,0.00,Sin comision
+SWIFT,Transferencia internacional SWIFT,MXN,250.00,Mas tipo de cambio del dia
+ATM_ALIADO,Retiro cajero red aliada (desde 4to),MXN,15.00,Primeros 3 del mes gratis
+ATM_EXT,Retiro cajero externo,MXN,30.00,Por operacion
+CARD_REPLACE,Reposicion tarjeta debit,MXN,80.00,Por solicitud
+BILL_PAY,Pago de servicios via app,MXN,5.00,Por pago
+ATM_BALANCE,Consulta de saldo en cajero,MXN,5.00,Por consulta
+STMT_PRINT,Estado de cuenta impreso,MXN,40.00,Bajo demanda
