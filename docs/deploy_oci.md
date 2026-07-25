@@ -1,103 +1,160 @@
 # Deploy en OCI Compute — NeoBank Alura RAG
 
-Guia simplificada para publicar la app Streamlit en una instancia **OCI Compute** (Always Free compatible).
+Guia operativa para publicar la app Streamlit en una instancia **OCI Compute** (Always Free compatible) y obtener la IP publica.
 
-## 1. Crear la instancia
+**Shape por defecto:** `VM.Standard.A1.Flex` (Ampere, 1 OCPU / 6 GB) + **Canonical Ubuntu 22.04**.  
+Si A1 no tiene capacidad: `VM.Standard.E2.1.Micro` (x86 Always Free).
+
+La app lee `LLM_API_KEY` (Groq OpenAI-compatible). El script de deploy tambien escribe `GROQ_API_KEY` con el mismo valor.
+
+---
+
+## 0. Antes de desplegar
+
+1. Asegurate de que GitHub tiene el codigo mas reciente:
+   `https://github.com/FelipeOctavio87/Challenge_AluraAgent`
+2. Ten a mano tu API key de Groq (`gsk_...`).
+3. En tu PC, ten una clave SSH (si no existe):
+
+```powershell
+ssh-keygen -t rsa -b 4096 -f $env:USERPROFILE\.ssh\id_rsa -N ""
+```
+
+- Publica: `%USERPROFILE%\.ssh\id_rsa.pub` (se sube a OCI)
+- Privada: `%USERPROFILE%\.ssh\id_rsa` (nunca a GitHub)
+
+---
+
+## 1. Crear instancia Compute (consola OCI)
 
 1. Entra a [Oracle Cloud Console](https://cloud.oracle.com/).
-2. **Compute → Instances → Create instance**.
-3. Configuracion recomendada Always Free:
-   - **Shape:** `VM.Standard.A1.Flex` (Ampere) o `VM.Standard.E2.1.Micro`
-   - **Image:** Ubuntu 22.04
-   - **Networking:** VCN con subnet **publica** y asignar IP publica
-4. Sube tu **SSH public key**.
-5. Crea la instancia y anota la **IP publica**.
+2. Menu hamburguesa → **Compute** → **Instances** → **Create instance**.
+3. **Name:** `neobank-alura-rag`.
+4. **Placement:** cualquier Availability Domain disponible (ej. AD-1).
+5. **Image and shape** → **Edit**:
+   - **Image:** Canonical Ubuntu 22.04 (Minimal o Standard).
+   - **Shape:** `VM.Standard.A1.Flex` → 1 OCPU, 6 GB RAM (Always Free).
+6. **Primary VNIC / Networking**:
+   - VCN por defecto o Create new VCN.
+   - Subnet **Public**.
+   - **Assign a public IPv4 address:** Yes.
+7. **Add SSH keys** → **Paste public keys** → pega el contenido de `id_rsa.pub`.
+8. **Create** → espera estado **Running**.
+9. En el detalle de la instancia, copia la **Public IP address**.
 
-## 2. Abrir el puerto de la app (Security List / NSG)
+### Conexion SSH
 
-La app escucha en el puerto **8501**.
-
-1. Ve a la VCN de la instancia → **Security Lists** (o Network Security Group).
-2. Agrega regla **Ingress**:
-   - Source: `0.0.0.0/0` (o tu IP si quieres restringir)
-   - IP Protocol: TCP
-   - Destination Port: `8501`
-3. Mantén SSH (`22`) limitado a tu IP.
-
-En la VM (Ubuntu), si usas UFW:
+Usuario Ubuntu en OCI: `ubuntu`.
 
 ```bash
-sudo ufw allow 22/tcp
-sudo ufw allow 8501/tcp
-sudo ufw enable
+ssh -i ~/.ssh/id_rsa ubuntu@<IP_PUBLICA>
 ```
 
-## 3. Instalar Docker en la VM
+En Windows (PowerShell):
 
-```bash
-sudo apt update
-sudo apt install -y ca-certificates curl gnupg
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo $VERSION_CODENAME) stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-sudo usermod -aG docker $USER
-# cierra sesion SSH y vuelve a entrar
+```powershell
+ssh -i $env:USERPROFILE\.ssh\id_rsa ubuntu@<IP_PUBLICA>
 ```
 
-## 4. Clonar y levantar la app
+---
+
+## 2. Abrir puerto 8501 (Security List / Ingress)
+
+Ruta exacta en la consola:
+
+1. Abre la instancia `neobank-alura-rag`.
+2. Pestana **Networking** → clic en el nombre de la **Subnet** (o en la **VCN**).
+3. En la subnet/VCN → **Security Lists**.
+4. Entra a la lista asociada (suele llamarse `Default Security List for <vcn>`).
+5. **Add Ingress Rules** → **+ Another Ingress Rule**:
+   - **Source Type:** CIDR
+   - **Source CIDR:** `0.0.0.0/0`
+   - **IP Protocol:** TCP
+   - **Destination Port Range:** `8501`
+   - **Description:** `Streamlit NeoBank`
+6. **Add Ingress Rules**.
+
+Deja la regla de SSH (`22`) existente. Idealmente restringe `22` a tu IP publica.
+
+---
+
+## 3. Despliegue por SSH (script unico)
+
+Conectado a la VM:
 
 ```bash
+# Opcion A: clonar y ejecutar el script del repo
 git clone https://github.com/FelipeOctavio87/Challenge_AluraAgent.git
 cd Challenge_AluraAgent
-
-# Crea .env con tu API key (Groq / OpenAI compatible)
-cp .env.example .env
-nano .env
-
-docker build -t neobank-rag .
-docker run -d --name neobank-rag -p 8501:8501 \
-  --env-file .env \
-  neobank-rag
+# Edita GROQ_KEY dentro del script o exportala:
+export GROQ_KEY="gsk_tu_clave_aqui"
+bash scripts/deploy_oci.sh
 ```
 
-Alternativa con Compose:
+Opcion B: pegar el contenido de [`scripts/deploy_oci.sh`](../scripts/deploy_oci.sh) en la sesion SSH (sustituyendo la key).
 
-```bash
-docker compose up -d --build
-```
+El script hace:
 
-## 5. Verificar
+1. `apt` update + git + ufw
+2. Instala Docker Engine + Compose plugin
+3. Abre UFW: `22` y `8501`
+4. Clona/actualiza el repo
+5. Crea `.env` con `LLM_API_KEY`, `GROQ_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL`
+6. `sudo docker compose up -d --build`
 
-Abre en el navegador:
+### Verificar
 
-```
-http://<IP_PUBLICA_OCI>:8501
+```text
+http://<IP_PUBLICA>:8501
 ```
 
 Logs:
 
 ```bash
-docker logs -f neobank-rag
+cd ~/Challenge_AluraAgent
+sudo docker compose ps
+sudo docker compose logs -f
 ```
 
-## 6. Actualizar
+---
+
+## 4. Actualizar documentacion del repo
+
+En `README.md` seccion **Enlace en vivo**, sustituye:
+
+```text
+http://<IP_PUBLICA_OCI>:8501
+```
+
+por tu IP real, por ejemplo:
+
+```text
+http://132.145.xx.xx:8501
+```
+
+Capturas (formato Markdown):
+
+```markdown
+![Pantalla inicial](docs/screenshots/01_home.png)
+![Consulta SPEI](docs/screenshots/02_consulta_spei.png)
+![Deploy OCI](docs/screenshots/03_oci_deploy.png)
+```
+
+---
+
+## 5. Actualizar el contenedor mas adelante
 
 ```bash
-cd Challenge_AluraAgent
+cd ~/Challenge_AluraAgent
 git pull
-docker build -t neobank-rag .
-docker rm -f neobank-rag
-docker run -d --name neobank-rag -p 8501:8501 --env-file .env neobank-rag
+sudo docker compose up -d --build
 ```
+
+---
 
 ## Notas
 
 - **Nunca** subas `.env` ni API keys a GitHub.
-- La primera build descarga el modelo de embeddings; puede tardar varios minutos en shapes micro.
-- Si la VM se queda sin RAM, reduce dependencias o preconstruye el indice en otra maquina y monta `vectorstore/` como volumen.
-- Documenta la IP publica final en el `README.md` del repositorio.
+- La primera build puede tardar **10–20+ minutos** en Always Free (descarga de torch/embeddings + indice FAISS).
+- En la misma sesion SSH tras `usermod -aG docker`, usa `sudo docker ...` o cierra sesion y vuelve a entrar.
+- Si la VM se queda sin RAM, prueba E2.1.Micro con menos carga o prebuild en otra maquina.

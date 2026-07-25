@@ -121,23 +121,39 @@ App en http://localhost:8501
 
 ## Deploy en OCI
 
-Guia paso a paso (Security List puerto **8501**, Docker, `docker run`):  
+Guia paso a paso (crear instancia Ubuntu 22.04, Security List puerto **8501**, script SSH):  
 [`docs/deploy_oci.md`](docs/deploy_oci.md)
+
+Script listo para pegar en la VM: [`scripts/deploy_oci.sh`](scripts/deploy_oci.sh)
+
+```bash
+ssh -i ~/.ssh/id_rsa ubuntu@<IP_PUBLICA>
+export GROQ_KEY="gsk_..."
+bash -c 'git clone https://github.com/FelipeOctavio87/Challenge_AluraAgent.git && cd Challenge_AluraAgent && bash scripts/deploy_oci.sh'
+```
 
 ### Enlace en vivo
 
 | Ambiente | URL |
 |----------|-----|
 | Local | http://localhost:8501 |
-| OCI Compute | `http://<IP_PUBLICA_OCI>:8501` *(actualizar tras el deploy)* |
+| OCI Compute | http://\<IP_PUBLICA_OCI\>:8501 |
 
-> Sustituye `<IP_PUBLICA_OCI>` por la IP de tu instancia cuando completes la Fase 3.
+> Tras el deploy, sustituye `\<IP_PUBLICA_OCI\>` por la IP publica de la instancia (ej. `http://132.145.12.34:8501`) y marca el checklist de abajo.
 
 ---
 
 ## Capturas / demos
 
-Coloca capturas en `docs/screenshots/` despues de probar la UI. Ejemplos de Q&A esperados: [`docs/ejemplos_qa.md`](docs/ejemplos_qa.md).
+Coloca las imagenes en `docs/screenshots/` y enlazalas asi:
+
+```markdown
+![Pantalla inicial](docs/screenshots/01_home.png)
+![Consulta SPEI](docs/screenshots/02_consulta_spei.png)
+![Deploy OCI](docs/screenshots/03_oci_deploy.png)
+```
+
+Ejemplos de Q&A esperados: [`docs/ejemplos_qa.md`](docs/ejemplos_qa.md).
 
 ---
 
@@ -160,5 +176,6 @@ Tambien funciona con OpenAI (`https://api.openai.com/v1`) u otros endpoints comp
 - [x] Documentos Fintech PDF/CSV
 - [x] Pipeline RAG (loader, chunking, FAISS, retrieval chain)
 - [x] Interfaz Streamlit
-- [x] Empaquetado Docker + guia OCI
-- [ ] IP publica OCI documentada (tras deploy real)
+- [x] Empaquetado Docker + guia OCI + script `scripts/deploy_oci.sh`
+- [ ] IP publica OCI documentada en la tabla **Enlace en vivo** (tras deploy real)
+- [ ] Capturas en `docs/screenshots/` enlazadas arriba
