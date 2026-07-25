@@ -145,15 +145,29 @@ Demo en vivo: [http://136.248.241.25:8501](http://136.248.241.25:8501)
 
 ## Capturas / demos
 
-Coloca las imagenes en `docs/screenshots/` y enlazalas asi:
+Evidencia visual del asistente NeoBank Alura (UI Streamlit + RAG + deploy OCI).
 
-```markdown
-![Pantalla inicial](docs/screenshots/01_home.png)
-![Consulta SPEI](docs/screenshots/02_consulta_spei.png)
-![Deploy OCI](docs/screenshots/03_oci_deploy.png)
-```
+### 1. Pantalla inicial
+Interfaz lista para consulta: marca NeoBank Alura, preguntas sugeridas, controles de modelo/Top-K y estado del sistema (FAISS y Groq API activos).
 
-Ejemplos de Q&A esperados: [`docs/ejemplos_qa.md`](docs/ejemplos_qa.md).
+![Pantalla inicial del asistente NeoBank Alura](docs/screenshots/01_home.png)
+
+### 2. Deploy en OCI (IP publica)
+Misma aplicacion servida en Oracle Cloud Infrastructure, accesible en [http://136.248.241.25:8501](http://136.248.241.25:8501). La barra de direcciones confirma el endpoint publico.
+
+![Deploy publico en OCI Compute](docs/screenshots/02_oci_deploy.png)
+
+### 3. Consulta en proceso
+El agente recupera contexto de las politicas internas (spinner *Consultando politicas...*) mientras prepara la respuesta con LangChain + FAISS.
+
+![Agente consultando politicas internas](docs/screenshots/03_consultando.png)
+
+### 4. Respuesta con fuentes
+Ejemplo de respuesta fundamentada (activacion de 2FA) citando `seguridad_fraude.pdf`, con el expander **Ver fuentes consultadas** para trazabilidad del RAG.
+
+![Respuesta del agente con fuentes documentales](docs/screenshots/04_respuesta_consulta.png)
+
+Mas ejemplos de Q&A: [`docs/ejemplos_qa.md`](docs/ejemplos_qa.md).
 
 ---
 
@@ -178,4 +192,4 @@ Tambien funciona con OpenAI (`https://api.openai.com/v1`) u otros endpoints comp
 - [x] Interfaz Streamlit
 - [x] Empaquetado Docker + guia OCI + script `scripts/deploy_oci.sh`
 - [x] IP publica OCI documentada: http://136.248.241.25:8501
-- [ ] Capturas en `docs/screenshots/` enlazadas arriba
+- [x] Capturas en `docs/screenshots/` enlazadas en el README
