@@ -105,8 +105,10 @@ El script hace:
 ### Verificar
 
 ```text
-http://<IP_PUBLICA>:8501
+http://136.248.241.25:8501
 ```
+
+(Health check OK en deploy actual.)
 
 Logs:
 
@@ -120,18 +122,13 @@ sudo docker compose logs -f
 
 ## 4. Actualizar documentacion del repo
 
-En `README.md` seccion **Enlace en vivo**, sustituye:
+En `README.md` seccion **Enlace en vivo**, la URL documentada es:
 
 ```text
-http://<IP_PUBLICA_OCI>:8501
+http://136.248.241.25:8501
 ```
 
-por tu IP real, por ejemplo:
-
-```text
-http://132.145.xx.xx:8501
-```
-
+Si la instancia cambia de IP, actualiza esa tabla y este archivo.
 Capturas (formato Markdown):
 
 ```markdown

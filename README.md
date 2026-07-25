@@ -137,9 +137,9 @@ bash -c 'git clone https://github.com/FelipeOctavio87/Challenge_AluraAgent.git &
 | Ambiente | URL |
 |----------|-----|
 | Local | http://localhost:8501 |
-| OCI Compute | http://\<IP_PUBLICA_OCI\>:8501 |
+| OCI Compute | **http://136.248.241.25:8501** |
 
-> Tras el deploy, sustituye `\<IP_PUBLICA_OCI\>` por la IP publica de la instancia (ej. `http://132.145.12.34:8501`) y marca el checklist de abajo.
+Demo en vivo: [http://136.248.241.25:8501](http://136.248.241.25:8501)
 
 ---
 
@@ -177,5 +177,5 @@ Tambien funciona con OpenAI (`https://api.openai.com/v1`) u otros endpoints comp
 - [x] Pipeline RAG (loader, chunking, FAISS, retrieval chain)
 - [x] Interfaz Streamlit
 - [x] Empaquetado Docker + guia OCI + script `scripts/deploy_oci.sh`
-- [ ] IP publica OCI documentada en la tabla **Enlace en vivo** (tras deploy real)
+- [x] IP publica OCI documentada: http://136.248.241.25:8501
 - [ ] Capturas en `docs/screenshots/` enlazadas arriba
