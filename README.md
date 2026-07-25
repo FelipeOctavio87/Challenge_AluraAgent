@@ -104,6 +104,24 @@ Abre http://localhost:8501
 - ¿Qué hago si sospecho robo de credenciales?
 - ¿Cuánto cuesta la reposición de tarjeta débit?
 
+### Ejemplos de respuestas del agente
+
+**Pregunta:** ¿Cuál es la comisión por transferencia SPEI saliente?  
+**Respuesta (resumen):** La comisión SPEI saliente es de **8.00 MXN** por operación. SPEI entrante no tiene costo.  
+**Fuente tipica:** `tarifas_comisiones.pdf` / `tarifas.csv`
+
+**Pregunta:** ¿Cómo activo el 2FA en NeoBank Alura?  
+**Respuesta (resumen):** En la app: Configuracion → Seguridad → Activar 2FA → escanear el codigo QR con una app autenticadora → confirmar con el codigo de 6 digitos. Tambien se puede usar SMS OTP como respaldo.  
+**Fuente tipica:** `seguridad_fraude.pdf` (seccion 3.1)
+
+**Pregunta:** ¿Cuáles son los límites de transferencia SPEI diarios?  
+**Respuesta (resumen):** En nivel KYC completo: hasta **50,000 MXN** por operacion y **100,000 MXN** diarios en SPEI nacionales.  
+**Fuente tipica:** `politicas_cuenta.pdf`
+
+**Pregunta:** ¿Qué hago si sospecho robo de credenciales?  
+**Respuesta (resumen):** Bloquear la cuenta (boton de panico o linea 800), restablecer contrasena, rotar 2FA, revisar movimientos de las ultimas 72 horas y abrir disputa en menos de 48 horas.  
+**Fuente tipica:** `seguridad_fraude.pdf`
+
 Mas ejemplos en [`docs/ejemplos_qa.md`](docs/ejemplos_qa.md).
 
 ---
